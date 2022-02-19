@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.io.*;		
 import java.util.*;
 import java.io.Console;
- @SuppressWarnings("unused")
+
 public class MovieTicketBooking{
 
     static Scanner sc=new Scanner(System.in);
