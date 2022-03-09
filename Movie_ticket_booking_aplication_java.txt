@@ -1,10 +1,125 @@
+
+//import java.sql.*;
+//public class MovieTicketBooking {
+//
+//	public static void main(String[] args) throws Exception{
+//		
+//		
+//        //Connection con  = DriverManager.getConnection(url,name,pass);
+//        
+//        	Demo d = new Demo();
+//        	System.out.println(d.getDataConnection());
+//    		d.getname();
+//        
+//	}
+//}
+//
+//	class Demo{
+//		static Scanner sc= new Scanner(System.in);
+//		Connection con=null;
+//		static String [] movieList = {"1)Beast","2)Valimai","3)Doctor","4)KGF2","5)Manaadu"};
+//		public static void getname() {
+//			String name;
+//			System.out.println("Enter your name: ");
+//			name  = sc.nextLine();
+//			System.out.println("WELCOME "+name);
+//			getmovie();
+//		}
+//		public Connection getDataConnection()
+//		{
+//			String url= "jdbc:mysql://localhost:3306/movie_booking_application";
+//			String name = "root";
+//			String pass = "root123";
+//			try
+//			{
+//			Class.forName("com.mysql.cj.jdbc.Driver");
+//			con  = DriverManager.getConnection(url,name,pass);
+//			}
+//			catch(Exception e)
+//			{
+//				System.out.println(e);
+//			}
+//			return con;
+//			//Statement st = con.createStatement();
+//	        /*ResultSet rs = st.executeQuery("select u_name from user where u_id=03;");
+//	        rs.next();
+//	        String name1 = rs.getString("u_name");
+//	        
+//	        	System.out.println(name1);
+//	        	st.close();
+//	        	//con.close();*/
+//		}
+//		public static void getmovie() {
+//			System.out.println("Select the movie from your List: ");
+//			for(int i=0;i<movieList.length;i++)
+//			{
+//				System.out.println(movieList[i]);
+//			}
+//			int choice = sc.nextInt();
+//			System.out.println("Please select the movie to watch: ");
+//			System.out.println(movieList[choice-1]);
+//			getseats();
+//		}
+//		public static void getseats() {
+//			int n;
+//			System.out.println("Please select the number of seats");
+//			n = sc.nextInt();
+//			int [] arr = new int[n];
+//			System.out.println("Please choose the seats");
+//			for(int i=0;i<n;i++)
+//			{
+//				arr[i] = sc.nextInt();
+//				
+//			}
+//			int amount  = n*150;  
+//			System.out.println("Total amount to pay: "+amount);
+//			System.out.println("Please select your Bank to Pay");
+//			int bank  =  1;
+//			while(bank==1)
+//			{
+//				System.out.println("1)Axis Bank");
+//				System.out.println("2)Union Bank");
+//				System.out.println("3)Indian Bank");
+//				System.out.println("4)State Bank");	
+//				int bak = sc.nextInt();
+//				switch(bak) {
+//				case 1:
+//					System.out.println("Welcome to Axis Bank");
+//					break;
+//				case 2:
+//					System.out.println("Welcome to Union Bank");
+//					break;
+//				case 3:
+//					System.out.println("Welcome to Indian Bank");
+//					break;
+//				case 4:
+//					System.out.println("Welcome to State Bank");
+//					break;
+//				}
+//				break;
+//			}
+//			System.out.println("Enter the amount :");
+//			int amountpay = sc.nextInt();
+//			if(amountpay == amount)
+//			{
+//				System.out.println("Your payment is successful");
+//				System.out.println("Your seats have been booked !!");
+//				System.out.println("Thank you");
+//			}
+//			else
+//			{
+//				System.out.println("Your Payment failed! Please try again");
+//			}
+//			
+//		}
+//	}
+
+
 import java.sql.*;
-import java.sql.Date;
+import java.util.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.io.*;		
-import java.util.*;
-import java.io.Console;
+
 
 public class MovieTicketBooking{
 
@@ -44,8 +159,7 @@ public class MovieTicketBooking{
             int num=ShowMovieList();
             int Id;
             if(num==0){
-                System.out.println("Sorry...!!!");
-                System.out.println("There is no show going on.....!!!!!!");
+                System.out.println("Sorry There is no show going on!");
                 return;
             }
             while(true){
@@ -79,11 +193,11 @@ public class MovieTicketBooking{
                     price=rs.getDouble(6);
                     RemainingSeats=rs.getInt(7)-seat;
                     if(RemainingSeats<=0){
-                        System.out.println("Insufficient seats....!!!");
-                        System.out.println("Booking is cancelled...!!!!");
+                        System.out.println("Insufficient seats.!!");
+                        System.out.println("Booking is cancelled.!!");
                         return;
                     }
-                    PreparedStatement pst1=con.prepareStatement("insert into customer (name,phoneNo,columnid,Mname,format,date,time,price,seat) values(?,?,?,?,?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
+                    PreparedStatement pst1=con.prepareStatement("insert into customer (name,phoneNo,columnid,Mname,format,date,time,price,seat) values(?,?,?,?,?,?,?,?,?)");
                     pst1.setString(1,Uname);
                     pst1.setString(2,Pno);
                     pst1.setInt(3,Id);
@@ -136,7 +250,7 @@ public class MovieTicketBooking{
 
     public static void showMyTicket(int num) throws SQLException{
         try{
-            PreparedStatement pst=con.prepareStatement("select * from customer where Cid=?");
+            PreparedStatement pst=con.prepareStatement("select * from customer where cid=?");
             pst.setInt(1,num);
             ResultSet rs=pst.executeQuery();
             if(rs.next()){
@@ -149,7 +263,7 @@ public class MovieTicketBooking{
                 System.out.println("Time-"+rs.getString(7));
                 System.out.println("Seat(s)-"+rs.getInt(9));
                 System.out.println("Price-"+rs.getDouble(8));
-                System.out.println("Unique Id-"+rs.getInt(10));
+                System.out.println("Movie Id-"+rs.getInt(10));
 
             }
             else{
@@ -166,7 +280,7 @@ public class MovieTicketBooking{
     public static void CancleTicket() throws SQLException{
         try{
             while(true){
-                System.out.print("Enter Unique Id(0 for exit): ");
+                System.out.print("Enter Movie Id(0 for exit): ");
                 int num=sc.nextInt();
                 if(num==0){
                     return;
@@ -181,8 +295,8 @@ public class MovieTicketBooking{
                 }
                 else{
                     
-                    System.out.println("The Unique Id doesn\'t Exist!");
-                    System.out.println("Please enter correct Unique Id");
+                    System.out.println("The Movie Id doesn\'t Exist!");
+                    System.out.println("Please enter correct Movie Id");
                     System.out.println("Please enter any key to continue");
                     sc.next();
                     
@@ -215,8 +329,8 @@ public class MovieTicketBooking{
                     return;
                 }
                 else{
-                    System.out.println("The Unique Id doesn\'t Exist");
-                    System.out.println("Plese enter correct Unique Id...!!\n");
+                    System.out.println("The Movie Id doesn\'t Exist");
+                    System.out.println("Plese enter correct Movie Id...!!\n");
                     System.out.println("Please enter any key to continue");
                     sc.next();
                     
@@ -234,9 +348,9 @@ public class MovieTicketBooking{
             PreparedStatement pst=con.prepareStatement("Select * from movies");
             ResultSet rs=pst.executeQuery();
             System.out.println("CHECK SEATS");
-            System.out.println("\t\t\t\t| MOVIE NAME\t| SEATS\t|");
+            //System.out.println("\t\t\t\t| MOVIE NAME\t| SEATS\t|");
             while(rs.next()){
-                System.out.println("\t\t\t\t| "+rs.getString(2)+"\t| "+rs.getInt(7)+"\t|");
+                System.out.println("MOVIE NAME:  "+rs.getString(2)+"SEATS  "+rs.getInt(7)+"\t|");
             } 
         }
         catch(Exception e){
@@ -266,7 +380,7 @@ public class MovieTicketBooking{
             java.util.Date d=new java.util.Date(date);
             java.sql.Date d1=new java.sql.Date(d.getYear(),d.getMonth(),d.getDate());
             java.sql.Time t1=new java.sql.Time(t.getHours(),t.getMinutes(),t.getSeconds());
-            PreparedStatement pst=con.prepareStatement("insert into movies (name,format,showdate,showtime,price,seat) values (?,?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement pst=con.prepareStatement("insert into movies (name,format,showdate,showtime,price,seat) values (?,?,?,?,?,?)");
             pst.setString(1,name);
             pst.setString(2,format);
             pst.setDate(3,d1);
@@ -341,12 +455,12 @@ public class MovieTicketBooking{
             ResultSet rs=pst.executeQuery();
             System.out.println("DETAILS OF ALL MOVIE");
             //System.out.println("\t| SNO.\t|ID\t|\tNAME\t|\tFORMAT\t| SHOW DATE\t| SHOW TIME\t| PRICE\t| AVL.SEAT(s)\t|");
-            int i=1;
+            //int i=1;
             while(rs.next()){
                 //System.out.println("  \t| "+i+"\t| "+rs.getInt(1)+"\t| "+rs.getString(2)+"\t| "+rs.getString(3)+"\t| "+rs.getDate(4)+"\t| "+rs.getTime(5)+"\t| "+rs.getDouble(6)+"\t|\t"+rs.getInt(7)+"\t|");
-            	System.out.println(rs.getString(2)+"- ID: "+rs.getInt(1)+" ,FORMAT: "+rs.getString(3)+" ,SHOW DATE: "+rs.getDate(4)+" ,SHOW TIME: "+rs.getTime(5)+"  , PRICE: "+rs.getDouble(6)+" , SEATS AVAILABLE: "+rs.getInt(7));
+            	System.out.println("MOVIE NAME: "+rs.getString(2)+"- ID: "+rs.getInt(1)+" ,FORMAT: "+rs.getString(3)+" ,SHOW DATE: "+rs.getDate(4)+" ,SHOW TIME: "+rs.getTime(5)+"  , PRICE: "+rs.getDouble(6)+" , SEATS AVAILABLE: "+rs.getInt(7));
                 num++;
-                i++;
+                //i++;
             }
         }
         catch(Exception e){
@@ -365,10 +479,10 @@ public class MovieTicketBooking{
             num=0;
             System.out.println("\n");
             System.out.println("DETAILS OF ALL BOOKINGS");
-            System.out.println("| SNO.\t| ID\t|\tNAME\t|\t Phone No.\t| Movie ID\t| SEAT(s)\t|");
+            //System.out.println("| SNO.\t| ID\t|\tNAME\t|\t Phone No.\t| Movie ID\t| SEAT(s)\t|");
             int i=1;
             while(rs.next()){
-                System.out.println(" \t\t| "+i+"\t|"+rs.getInt(10)+"\t| "+rs.getString(1)+"\t|\t"+rs.getString(2)+"\t|\t"+rs.getInt(3)+"\t|\t"+rs.getInt(9)+"\t|");
+                System.out.println("ID: "+rs.getInt(10)+"  NAME:  "+rs.getString(1)+"  PHONE NO: "+rs.getString(2)+"  MOVIE ID:  "+rs.getInt(3)+"  SEAT(S):  "+rs.getInt(9));
                 num++;
             }
         }
@@ -425,11 +539,11 @@ public class MovieTicketBooking{
                                     char c='x';
                                     while(c=='x')
                                     {
-                                        System.out.print("Do you have your unique ID(enter \'Y\' for yes or \'N' for No: ");
+                                        System.out.print("Do you have your movie ID(enter \'Y\' for yes or \'N' for No: ");
                                         c=sc.next().charAt(0);
                                         if(c=='Y'||c=='y')
                                         {
-                                            System.out.print("Enter unique Id: ");
+                                            System.out.print("Enter movie Id: ");
                                             int num=sc.nextInt();
                                             showMyTicket(num);
                                         }
@@ -438,8 +552,8 @@ public class MovieTicketBooking{
                                             System.out.println("Enter your name: ");
                                             sc.nextLine();
                                             String str=sc.nextLine();
-                                            System.out.println("\t\t\t\tEnter Mobile no.: ");
-                                            System.out.print("\t\t\t\t");
+                                            System.out.println("Enter Mobile no.: ");
+                                            //System.out.print("\t\t\t\t");
                                             String ph=sc.nextLine();
                                             PreparedStatement pst=con.prepareStatement("select * from customer where name=? and phoneNo=?");
                                             pst.setString(1,str);
@@ -585,7 +699,7 @@ public class MovieTicketBooking{
                         }
                         else{
                            
-                            System.out.println("YOU ARE NOT AUTHORISED TO ACCESS THIS PAGE");
+                            System.out.println("INCORRECT USERNAME PASSWORD");
                             System.out.println("Press any key to go back");
                             sc.next();
                             ch=9;
