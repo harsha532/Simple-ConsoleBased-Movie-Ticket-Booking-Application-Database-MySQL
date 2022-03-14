@@ -10,7 +10,7 @@ public class MovieTicketBooking{
     
 
     public static boolean login() throws SQLException{
-        System.out.println("LOGIN TO MOVIE TICKET BOOKING");
+        System.out.println("LOGIN");
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter Username");
         String username =sc.nextLine();
