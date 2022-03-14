@@ -1,7 +1,5 @@
 import java.sql.*;
 import java.util.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 
 
 public class MovieTicketBooking{
@@ -9,16 +7,7 @@ public class MovieTicketBooking{
     static Scanner sc=new Scanner(System.in);
     static Connection con;
 
-    static{
-        try{
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            con=DriverManager.getConnection("jdbc:mysql://localhost:3306/ movie_ticket_booking_application","root","root123");
-        }
-       catch(Exception e){
-            System.out.println("Exception occured "+e.getMessage());
-        }
-        
-    }
+    
 
     public static boolean login() throws SQLException{
         System.out.println("LOGIN TO MOVIE TICKET BOOKING");
@@ -35,8 +24,122 @@ public class MovieTicketBooking{
         }
     }
 
+	public static void AddNewMovie() throws SQLException{
+        try{
+            System.out.println("Enter Movie name: ");
+            sc.nextLine();
+            String name=sc.nextLine();
+            System.out.println("Format: ");
+            String format=sc.nextLine();
+            System.out.println("Date(YYYY-MM-DD): ");
+            String date=sc.nextLine();
+            System.out.println("Time(HH:MM:SS): ");
+            String time=sc.nextLine();
+            System.out.println("Price: ");
+            Double price=sc.nextDouble();
+            System.out.println("Seats: ");
+            int seat=sc.nextInt();
+            PreparedStatement pst=con.prepareStatement("insert into movies (name,format,showdate,showtime,price,seat) values (?,?,?,?,?,?)");
+            pst.setString(1,name);
+            pst.setString(2,format);
+            pst.setString(3,date);
+            pst.setString(4,time);
+            pst.setDouble(5,price);
+            pst.setInt(6,seat);
+            if(pst.executeUpdate()>0){
+                System.out.println("Movie Added Successfully");
+            }
+            else{
+                System.out.println("Movie NOT added!");
+            }
+        }
+        catch(Exception e){
+            System.out.println("Exception occured "+e.getMessage());
+        }
+    }
+    public static void DeleteMovie(){
+        try{
+            System.out.println("Enter Movie ID(0 to exit): ");
+            int num=sc.nextInt();
+            if(num==0){
+                return;
+            }
+            PreparedStatement pst=con.prepareStatement("select * from movies where columnid=?");
+            pst.setInt(1,num);
+            ResultSet rs=pst.executeQuery();
+            if(rs.next()){
+                System.out.println("  \t|ID\t|\tNAME\t|\tFORMAT\t| SHOW DATE\t| SHOW TIME\t| PRICE\t| AVL.SEAT(s)\t|");
+                System.out.println("  \t| "+rs.getInt(1)+"\t| "+rs.getString(2)+"\t| "+rs.getString(3)+"\t| "+rs.getDate(4)+"\t| "+rs.getTime(5)+"\t| "+rs.getDouble(6)+"\t|\t"+rs.getInt(7)+"\t|");
+            }
+            else{
+                System.out.println("Invalid Movie ID");
+                System.out.println("Please enter any key to continue");
+                sc.next();
+                return;
+            }
+            System.out.println("Press \'d\' to delete");
+            char c=sc.next().charAt(0);
+            if(c=='d'||c=='D'){
+                pst=con.prepareStatement("delete from movies where columnid=?");
+                pst.setInt(1,num);
+                if(pst.executeUpdate()>0){
+                    System.out.println("Movie deleted");
+                }
+                
+                else{
+                    System.out.println("Movie NOT deleted");
+                    System.out.println("Please enter any key to continue");
+                    sc.next();
+                }
+            }
+            else{
+                System.out.println("Movie NOT deleted");
+                System.out.println("Please enter any key to continue");
+                sc.next(); 
+                return;
+            }
+        }
+        catch(Exception e){
+            System.out.println("Exception occured "+e.getMessage());
+        }
+    }
+    public static int SeeTotalBookings() throws SQLException{
+        int num=0;
+        try{
+            num=ShowMovieList();
+            PreparedStatement pst=con.prepareStatement("select * from customer");
+            ResultSet rs=pst.executeQuery();
+            num=0;
+            System.out.println("\n");
+            System.out.println("DETAILS OF ALL BOOKINGS");
+            while(rs.next()){
+                System.out.println("ID: "+rs.getInt(10)+"  NAME:  "+rs.getString(1)+"  PHONE NO: "+rs.getString(2)+"  MOVIE ID:  "+rs.getInt(3)+"  SEAT(S):  "+rs.getInt(9));
+                num++;
+            }
+        }
+        catch(Exception e){
+            System.out.println("Exception occured "+e.getMessage());
+        }
+        return num;
+    }
+    public static int ShowMovieList() throws SQLException{
+        int num=0;
+        try{
+            PreparedStatement pst=con.prepareStatement("select * from movies");
+            ResultSet rs=pst.executeQuery();
+            System.out.println("DETAILS OF ALL MOVIE");
+            while(rs.next()){
+            	System.out.println("MOVIE NAME: "+rs.getString(2)+"- ID: "+rs.getInt(1)+" ,FORMAT: "+rs.getString(3)+" ,SHOW DATE: "+rs.getDate(4)+" ,SHOW TIME: "+rs.getTime(5)+"  , PRICE: "+rs.getDouble(6)+" , SEATS AVAILABLE: "+rs.getInt(7));
+                num++;
+            }
+        }
+        catch(Exception e){
+            System.out.println("Exception occured "+e.getMessage());
+        }
+        return num;
+    }
 
-    @SuppressWarnings("deprecation")
+  
 	public static void BookTicket() throws SQLException{
         try{
             int num=ShowMovieList();
@@ -63,16 +166,12 @@ public class MovieTicketBooking{
                     System.out.println("Enter seats: ");
                     int seat=sc.nextInt();
                     int RemainingSeats;
-                    java.util.Date d;
-                    java.util.Date t;
                     double price;
                     String Mname,format;
                     Mname=rs.getString(2);
                     format=rs.getString(3);
-                    d=rs.getDate(4);
-                    java.sql.Date date=new java.sql.Date(d.getYear(),d.getMonth(),d.getDate());
-                    t=rs.getTime(5);
-                    java.sql.Time time=new Time(t.getHours(),t.getMinutes(),0);
+                    String date = rs.getString(4);
+                    String time  = rs.getString(5);
                     price=rs.getDouble(6);
                     RemainingSeats=rs.getInt(7)-seat;
                     if(RemainingSeats<=0){
@@ -86,8 +185,8 @@ public class MovieTicketBooking{
                     pst1.setInt(3,Id);
                     pst1.setString(4,Mname);
                     pst1.setString(5,format);
-                    pst1.setDate(6,date);
-                    pst1.setTime(7,time);
+                    pst1.setString(6,date);
+                    pst1.setString(7,time);
                     pst1.setDouble(8,price*seat);
                     pst1.setInt(9,seat);
                     if(pst1.executeUpdate()>0){
@@ -129,8 +228,6 @@ public class MovieTicketBooking{
             System.out.println("Exception occured "+e.getMessage());
         }
     }
-
-
     public static void showMyTicket(int num) throws SQLException{
         try{
             PreparedStatement pst=con.prepareStatement("select * from customer where cid=?");
@@ -216,7 +313,6 @@ public class MovieTicketBooking{
                     System.out.println("Plese enter correct Movie Id...!!\n");
                     System.out.println("Please enter any key to continue");
                     sc.next();
-                    
                 }
             }
         }
@@ -231,7 +327,6 @@ public class MovieTicketBooking{
             PreparedStatement pst=con.prepareStatement("Select * from movies");
             ResultSet rs=pst.executeQuery();
             System.out.println("CHECK SEATS");
-            //System.out.println("\t\t\t\t| MOVIE NAME\t| SEATS\t|");
             while(rs.next()){
                 System.out.println("MOVIE NAME:  "+rs.getString(2)+"SEATS  "+rs.getInt(7)+"\t|");
             } 
@@ -240,143 +335,6 @@ public class MovieTicketBooking{
             System.out.println("Exception occured "+e.getMessage());
         }
     }
-
-
-    @SuppressWarnings("deprecation")
-	public static void AddNewMovie() throws SQLException{
-        try{
-            System.out.println("Enter Movie name: ");
-            sc.nextLine();
-            String name=sc.nextLine();
-            System.out.println("Format: ");
-            String format=sc.nextLine();
-            System.out.println("Date(YYYY/MM/DD): ");
-            String date=sc.nextLine();
-            System.out.println("Time(HH:MM:SS): ");
-            String time=sc.nextLine();
-            System.out.println("Price: ");
-            Double price=sc.nextDouble();
-            System.out.println("Seats: ");
-            int seat=sc.nextInt();
-            DateFormat df=new SimpleDateFormat("HH:MM:SS");
-            java.util.Date t=df.parse(time);
-            java.util.Date d=new java.util.Date(date);
-            java.sql.Date d1=new java.sql.Date(d.getYear(),d.getMonth(),d.getDate());
-            java.sql.Time t1=new java.sql.Time(t.getHours(),t.getMinutes(),t.getSeconds());
-            PreparedStatement pst=con.prepareStatement("insert into movies (name,format,showdate,showtime,price,seat) values (?,?,?,?,?,?)");
-            pst.setString(1,name);
-            pst.setString(2,format);
-            pst.setDate(3,d1);
-            pst.setTime(4,t1);
-            pst.setDouble(5,price);
-            pst.setInt(6,seat);
-            if(pst.executeUpdate()>0){
-                System.out.println("Movie Added Successfully");
-            }
-            else{
-                System.out.println("Movie NOT added!");
-            }
-        }
-        catch(Exception e){
-            System.out.println("Exception occured "+e.getMessage());
-        }
-    }
-
-
-    public static void DeleteMovie(){
-        try{
-            System.out.println("Enter Movie ID(0 to exit): ");
-            int num=sc.nextInt();
-            if(num==0){
-                return;
-            }
-            PreparedStatement pst=con.prepareStatement("select * from movies where columnid=?");
-            pst.setInt(1,num);
-            ResultSet rs=pst.executeQuery();
-            if(rs.next()){
-                System.out.println("  \t|ID\t|\tNAME\t|\tFORMAT\t| SHOW DATE\t| SHOW TIME\t| PRICE\t| AVL.SEAT(s)\t|");
-                System.out.println("  \t| "+rs.getInt(1)+"\t| "+rs.getString(2)+"\t| "+rs.getString(3)+"\t| "+rs.getDate(4)+"\t| "+rs.getTime(5)+"\t| "+rs.getDouble(6)+"\t|\t"+rs.getInt(7)+"\t|");
-            }
-            else{
-                System.out.println("Invalid Movie ID");
-                System.out.println("Please enter any key to continue");
-                sc.next();
-                return;
-            }
-            System.out.println("Press \'d\' to delete");
-            char c=sc.next().charAt(0);
-            if(c=='d'||c=='D'){
-                pst=con.prepareStatement("delete from movies where columnid=?");
-                pst.setInt(1,num);
-                if(pst.executeUpdate()>0){
-                    System.out.println("Movie deleted");
-                }
-                
-                else{
-                    System.out.println("Movie NOT deleted");
-                    System.out.println("Please enter any key to continue");
-                    sc.next();
-                }
-            }
-            else{
-                System.out.println("Movie NOT deleted");
-                System.out.println("Please enter any key to continue");
-                sc.next(); 
-                return;
-            }
-        }
-        catch(Exception e){
-            System.out.println("Exception occured "+e.getMessage());
-        }
-    }
-
-
-    public static int ShowMovieList() throws SQLException{
-        int num=0;
-        try{
-            PreparedStatement pst=con.prepareStatement("select * from movies");
-            ResultSet rs=pst.executeQuery();
-            System.out.println("DETAILS OF ALL MOVIE");
-            //System.out.println("\t| SNO.\t|ID\t|\tNAME\t|\tFORMAT\t| SHOW DATE\t| SHOW TIME\t| PRICE\t| AVL.SEAT(s)\t|");
-            //int i=1;
-            while(rs.next()){
-                //System.out.println("  \t| "+i+"\t| "+rs.getInt(1)+"\t| "+rs.getString(2)+"\t| "+rs.getString(3)+"\t| "+rs.getDate(4)+"\t| "+rs.getTime(5)+"\t| "+rs.getDouble(6)+"\t|\t"+rs.getInt(7)+"\t|");
-            	System.out.println("MOVIE NAME: "+rs.getString(2)+"- ID: "+rs.getInt(1)+" ,FORMAT: "+rs.getString(3)+" ,SHOW DATE: "+rs.getDate(4)+" ,SHOW TIME: "+rs.getTime(5)+"  , PRICE: "+rs.getDouble(6)+" , SEATS AVAILABLE: "+rs.getInt(7));
-                num++;
-                //i++;
-            }
-        }
-        catch(Exception e){
-            System.out.println("Exception occured "+e.getMessage());
-        }
-        return num;
-    }
-
-
-    public static int SeeTotalBookings() throws SQLException{
-        int num=0;
-        try{
-            num=ShowMovieList();
-            PreparedStatement pst=con.prepareStatement("select * from customer");
-            ResultSet rs=pst.executeQuery();
-            num=0;
-            System.out.println("\n");
-            System.out.println("DETAILS OF ALL BOOKINGS");
-            //System.out.println("| SNO.\t| ID\t|\tNAME\t|\t Phone No.\t| Movie ID\t| SEAT(s)\t|");
-            int i=1;
-            while(rs.next()){
-                System.out.println("ID: "+rs.getInt(10)+"  NAME:  "+rs.getString(1)+"  PHONE NO: "+rs.getString(2)+"  MOVIE ID:  "+rs.getInt(3)+"  SEAT(S):  "+rs.getInt(9));
-                num++;
-            }
-        }
-        catch(Exception e){
-            System.out.println("Exception occured "+e.getMessage());
-        }
-        return num;
-    }
-
-
-    
 
 
     public static void main(String[] arg) throws SQLException{
@@ -436,7 +394,6 @@ public class MovieTicketBooking{
                                             sc.nextLine();
                                             String str=sc.nextLine();
                                             System.out.println("Enter Mobile no.: ");
-                                            //System.out.print("\t\t\t\t");
                                             String ph=sc.nextLine();
                                             PreparedStatement pst=con.prepareStatement("select * from customer where name=? and phoneNo=?");
                                             pst.setString(1,str);
@@ -487,7 +444,7 @@ public class MovieTicketBooking{
                                     ch1=9;
                             }
                             if(ch1!=0 && ch1!=9 && ch1!=6){
-                                System.out.println("Press any key to back to main menu");
+                                System.out.println("Press any key to go back to main menu");
                                 System.out.println("0. Exit");
                                 System.out.println("Enter your Choice:");
                                 char c1=sc.next().charAt(0);
@@ -515,7 +472,7 @@ public class MovieTicketBooking{
                             int ch2;
                             do{
                                
-                                System.out.println("ADMIN PANAL");
+                                System.out.println("ADMIN PANEL");
                                 System.out.println("1. Add New Movie");
                                 System.out.println("2. Delete Movie");
                                 System.out.println("3. Show Movie List");
@@ -607,5 +564,15 @@ public class MovieTicketBooking{
         
             }
         }
+    }
+    static{
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con=DriverManager.getConnection("jdbc:mysql://localhost:3306/ movie_ticket_booking_application","root","root123");
+        }
+       catch(Exception e){
+            System.out.println("Exception occured "+e.getMessage());
+        }
+        
     }
 }
